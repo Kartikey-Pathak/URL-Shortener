@@ -76,12 +76,12 @@ export default function Home() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <button className="text-sm font-medium cursor-pointer px-4 py-2 rounded-lg text-zinc-300 active:text-white active:bg-white/5 hover:text-white hover:bg-white/5 transition-all">
+           <a href="/login"><button className="text-sm font-medium cursor-pointer px-4 py-2 rounded-lg text-zinc-300 active:text-white active:bg-white/5 hover:text-white hover:bg-white/5 transition-all">
             Log In
-          </button>
-          <button className="text-sm font-medium cursor-pointer px-4 py-2 rounded-lg bg-white active:bg-zinc-200 text-black hover:bg-zinc-200 transition-all font-semibold shadow-md">
+          </button></a>
+          <a href="/signup"><button className="text-sm font-medium cursor-pointer px-4 py-2 rounded-lg bg-white active:bg-zinc-200 text-black hover:bg-zinc-200 transition-all font-semibold shadow-md">
             Get Started
-          </button>
+          </button></a>
         </div>
       </header>
 
