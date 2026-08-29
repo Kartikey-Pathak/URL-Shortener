@@ -14,6 +14,10 @@ app.get("/",(req,resp)=>{
     return resp.json({message:"Server Says Hello World...!"});
 })
 
+app.get("/favicon.ico", (req, resp) => {
+    return resp.status(204).end();
+});
+
 app.use(urlRouter);
 app.use("/user",userRouter);
 
