@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 import { Copy, Check, ExternalLink, Trash2, Link as LinkIcon } from "lucide-react";
 import { FlipWords } from "@/components/ui/flip-words";
+import { LoaderFive } from "@/components/ui/loader";
 import { useSession, signOut } from "next-auth/react";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import Link from "next/link";
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -321,8 +322,8 @@ export default function Home() {
             </div>
 
             {loadingLinks ? (
-              <div className="p-8 text-center text-sm text-zinc-500 bg-white/[0.02] border border-white/5 rounded-2xl">
-                Loading your links...
+              <div className="p-8 flex items-center justify-center bg-white/[0.02] border border-white/5 rounded-2xl">
+                <LoaderFive text="Loading your links..." />
               </div>
             ) : userLinks.length === 0 ? (
               <div className="p-8 text-center text-sm text-zinc-400 bg-white/[0.02] border border-white/5 rounded-2xl">

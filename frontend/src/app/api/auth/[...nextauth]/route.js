@@ -2,6 +2,8 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import axios from "axios";
 
+const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 export const authOptions = {
   providers: [
     GoogleProvider({
@@ -13,7 +15,7 @@ export const authOptions = {
     async signIn({ user, account, profile }) {
       try {
         // Sync user with backend database
-        const res = await axios.post("http://localhost:8000/user/google-auth", {
+        const res = await axios.post(`${backendUrl}/user/google-auth`, {
           name: user.name,
           email: user.email,
         });

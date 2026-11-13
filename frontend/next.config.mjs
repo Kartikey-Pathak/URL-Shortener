@@ -1,22 +1,27 @@
 /** @type {import('next').NextConfig} */
+const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 const nextConfig = {
   async rewrites() {
     return [
       {
         source: "/api/users/:path*",
-        destination: "http://localhost:8000/user/:path*",
+        destination: `${backendUrl}/user/:path*`,
       },
       {
         source: "/api/shorten",
-        destination: "http://localhost:8000/shorten",
+        destination: `${backendUrl}/shorten`,
       },
       {
         source: "/api/codes",
-        destination: "http://localhost:8000/codes",
+        destination: `${backendUrl}/codes`,
+      },
+      {
+        source: "/api/urls/:id",
+        destination: `${backendUrl}/:id`,
       },
     ];
   },
 };
 
 export default nextConfig;
-
