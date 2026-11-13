@@ -1,15 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
-import Image from "next/image";
-import { Copy, Check, QrCode, BarChart3, Globe, Shield, ExternalLink, ArrowRight } from "lucide-react";
+import { Copy, Check, ExternalLink } from "lucide-react";
 import { FlipWords } from "@/components/ui/flip-words";
+import { useSession, signOut } from "next-auth/react";
+import toast, { Toaster } from "react-hot-toast";
+import axios from "axios";
+import Link from "next/link";
 
 export default function Home() {
+  const { data: session } = useSession();
+  const [token, setToken] = useState(null);
+  const [user, setUser] = useState(null);
   const [url, setUrl] = useState("");
   const [shortUrl, setShortUrl] = useState(null);
   const [copied, setCopied] = useState(false);
+
+  // Sync token from localStorage or NextAuth session
+  useEffect(() => {
+    const localToken = localStorage.getItem("token");
+    const localUser = localStorage.getItem("user");
+
+    if (localToken) {
+      setToken(localToken);
+      if (localUser) {
+        try {
+          setUser(JSON.parse(localUser));
+        } catch (e) {}
+      }
+    } else if (session?.backendToken) {
+      setToken(session.backendToken);
+      setUser(session.user);
+      localStorage.setItem("token", session.backendToken);
+      if (session.user) {
+        localStorage.setItem("user", JSON.stringify(session.user));
+      }
+    }
+  }, [session]);
+
+  const handleLogout = async () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    document.cookie = "token=; path=/; max-age=0";
+    setToken(null);
+    setUser(null);
+    if (session) {
+      await signOut({ callbackUrl: "/" });
+    } else {
+      toast.success("Logged Out.");
+    }
+  };
 
   const placeholders = [
     "Paste your long URL here...",
@@ -31,12 +72,34 @@ export default function Home() {
     setUrl(e.target.value);
   };
 
-  const onSubmit = (e) => {
-    e.preventDefault();
+  const onSubmit = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!url) return;
 
-    //shortened URL output
-    setShortUrl(`https://kartikeypathak.com/`);
+    const activeToken = token || (typeof window !== "undefined" && localStorage.getItem("token"));
+    if (!activeToken) {
+      toast.error("Please login to shorten URL");
+      return;
+    }
+
+    try {
+      const resp = await axios.post(
+        "/api/shorten",
+        { url },
+        {
+          headers: {
+            Authorization: `Bearer ${activeToken}`,
+          },
+        }
+      );
+
+      const generatedLink = `http://localhost:8000/${resp.data.shortCode}`;
+      setShortUrl(generatedLink);
+    } catch (error) {
+      const msg = error?.response?.data?.error || "Error shortening URL";
+      toast.error(typeof msg === "string" ? msg : "Invalid URL");
+      console.error(error);
+    }
   };
 
   const handleCopy = () => {
@@ -48,6 +111,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen w-full bg-black text-white flex flex-col justify-between relative overflow-x-hidden font-sans">
+      <Toaster />
 
       {/* Background Video with Blur Overlay */}
       <div className="fixed inset-0 z-0 overflow-hidden">
@@ -65,7 +129,6 @@ export default function Home() {
       {/* Navigation Header */}
       <header className="relative z-20 w-full px-6 py-4 flex items-center justify-between max-w-7xl mx-auto border-b border-white/10">
         <div className="flex items-center gap-3">
-
           <a href="/"><span className="font-bold text-xl tracking-tight">URL Shortener</span></a>
         </div>
 
@@ -76,19 +139,33 @@ export default function Home() {
         </nav>
 
         <div className="flex items-center gap-3">
-           <a href="/login"><button className="text-sm font-medium cursor-pointer px-4 py-2 rounded-lg text-zinc-300 active:text-white active:bg-white/5 hover:text-white hover:bg-white/5 transition-all">
-            Log In
-          </button></a>
-          <a href="/signup"><button className="text-sm font-medium cursor-pointer px-4 py-2 rounded-lg bg-white active:bg-zinc-200 text-black hover:bg-zinc-200 transition-all font-semibold shadow-md">
-            Get Started
-          </button></a>
+          {token || session ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-zinc-300 hidden sm:inline-block">
+                {user?.name || session?.user?.name || "User"}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="text-sm font-medium cursor-pointer px-4 py-2 rounded-lg text-zinc-300 active:text-white active:bg-white/5 hover:text-white hover:bg-white/5 transition-all"
+              >
+                Log Out
+              </button>
+            </div>
+          ) : (
+            <>
+              <a href="/login"><button className="text-sm font-medium cursor-pointer px-4 py-2 rounded-lg text-zinc-300 active:text-white active:bg-white/5 hover:text-white hover:bg-white/5 transition-all">
+                Log In
+              </button></a>
+              <a href="/signup"><button className="text-sm font-medium cursor-pointer px-4 py-2 rounded-lg bg-white active:bg-zinc-200 text-black hover:bg-zinc-200 transition-all font-semibold shadow-md">
+                Get Started
+              </button></a>
+            </>
+          )}
         </div>
       </header>
 
       {/* Main Hero Section */}
       <main className="relative z-20 flex-1 flex flex-col items-center justify-center text-center px-4 py-12 max-w-5xl mx-auto w-full">
-
-
         <h1 className="font-extrabold mt-10 text-white text-4xl sm:text-6xl md:text-7xl tracking-tight max-w-4xl leading-[1.1]">
           Turn Long URLs Into <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent"><FlipWords words={words} /></span>
         </h1>
@@ -96,7 +173,6 @@ export default function Home() {
         <p className="font-normal text-zinc-400 text-base sm:text-lg md:text-xl max-w-2xl mt-4 leading-relaxed">
           Create, manage, and share clean short URLs with a fast, secure URL shortening platform built for developers.
         </p>
-
 
         <div className="w-full max-w-2xl mt-8 p-6 md:p-8 bg-white/[0.03] border border-white/10 backdrop-blur-2xl rounded-3xl shadow-2xl transition-all">
           <h3 className="font-medium text-zinc-200 text-lg mb-4 text-left">
@@ -108,7 +184,6 @@ export default function Home() {
             onChange={handleChange}
             onSubmit={onSubmit}
           />
-
 
           {shortUrl && (
             <div className="mt-6 p-4 bg-white/5 border border-purple-500/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -132,9 +207,6 @@ export default function Home() {
             </div>
           )}
         </div>
-
-
-
       </main>
 
       {/* Footer */}

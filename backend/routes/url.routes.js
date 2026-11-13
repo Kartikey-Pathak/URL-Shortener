@@ -15,7 +15,7 @@ router.post("/shorten", ensureAuthenticated, async (req, resp) => {
     const validate = await ShortenPostRequestSchema.safeParseAsync(req.body);
     console.log(req.body);
     if (validate.error) {
-        resp.status(400).json({ error: validate.error.message });
+        return resp.status(400).json({ error: validate.error.message });
     }
 
     const { url, code } = validate.data;
@@ -23,10 +23,7 @@ router.post("/shorten", ensureAuthenticated, async (req, resp) => {
 
     const result = await createUrl(shortCode, url, req.user.id);
 
-
-
-    resp.status(201).json({ id: result.id, shortCode: result.shortCode, targetURL: result.targetURL });
-
+    return resp.status(201).json({ id: result.id, shortCode: result.shortCode, targetURL: result.targetURL });
 })
 
 router.get("/codes",ensureAuthenticated,async (req,resp)=>{
@@ -42,7 +39,7 @@ router.get("/:shortcode", async function (req, resp) {
     }).from(urlsTable).where(eq(urlsTable.shortCode, code));
 
     if (!result) {
-        resp.status(404).json({ error: "Invalid URL" });
+        return resp.status(404).json({ error: "Invalid URL" });
     }
 
     return resp.redirect(result.targetURL);

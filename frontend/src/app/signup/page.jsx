@@ -3,15 +3,14 @@ import React, { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { Label } from "../../components/ui/label";
+import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { Input } from "../../components/ui/input";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { signIn } from "next-auth/react";
 import {
     IconBrandGithub,
     IconBrandGoogle,
-    IconBrandOnlyfans,
 } from "@tabler/icons-react";
 
 export default function SignupFormDemo() {
@@ -33,14 +32,18 @@ export default function SignupFormDemo() {
 
         try {
             setLoading(true);
-            const resp = await axios.post("/api/users/signup", user);
-            console.log("Sign Up Success", resp.data);
-            toast.success("Created Account.");
+            const resp = await axios.post("/api/users/signup", {
+                name: user.username,
+                email: user.email,
+                password: user.password,
+            });
+            console.log("Sign Up OTP Sent", resp.data);
+            toast.success("OTP sent to your email!");
             router.push(`/verify?email=${encodeURIComponent(user.email)}`);
         } catch (error) {
             const message = error?.response?.data?.error || "Something went wrong";
-            toast.error(message);
-            console.log(error);
+            toast.error(typeof message === "string" ? message : "Invalid signup details");
+            console.error(error);
         } finally {
             setLoading(false);
         }
@@ -48,8 +51,7 @@ export default function SignupFormDemo() {
 
     useEffect(() => {
         toast.success("Note : - Your Password Will Be Encrypted");
-
-    }, [])
+    }, []);
 
     return (
         <section className=" w-full dark:bg-black  h-full flex items-center justify-center">
@@ -119,14 +121,13 @@ export default function SignupFormDemo() {
                     </button>
                 </form>
 
-
                 <div className="my-2 h-[1px] w-full bg-gradient-to-r from-transparent via-neutral-300 to-transparent dark:via-neutral-700" />
 
                 <div className="flex flex-col space-y-4">
                     <button
                         onClick={() => signIn("github")}
                         className="group/btn shadow-input relative active:opacity-70 active:dark:opacity-70 flex h-10 w-full items-center justify-start space-x-2 backdrop-blur-sm bg-white/10 rounded-4xl px-4 font-medium text-black dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_#262626]"
-                        type="submit"
+                        type="button"
                     >
                         <IconBrandGithub className="h-4 w-4 text-neutral-200 dark:text-neutral-300" />
                         <span className="text-sm text-neutral-200 dark:text-neutral-300">
@@ -135,9 +136,9 @@ export default function SignupFormDemo() {
                         <BottomGradient />
                     </button>
                     <button
-                        onClick={() => signIn("google")}
+                        onClick={() => signIn("google", { callbackUrl: "/" })}
                         className="group/btn active:opacity-70 active:dark:opacity-70 shadow-input relative flex h-10 w-full items-center justify-start space-x-2 backdrop-blur-sm bg-white/10 rounded-4xl px-4 font-medium text-black dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_#262626]"
-                        type="submit"
+                        type="button"
                     >
                         <IconBrandGoogle className="h-4 w-4 text-neutral-200 dark:text-neutral-300" />
                         <span className="text-sm text-neutral-200 dark:text-neutral-300">

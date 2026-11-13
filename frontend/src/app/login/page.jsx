@@ -4,14 +4,13 @@ import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Label } from "../../components/ui/label";
-import { Input } from "../../components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { signIn } from "next-auth/react";
 import {
   IconBrandGithub,
   IconBrandGoogle,
-  IconBrandOnlyfans,
 } from "@tabler/icons-react";
 
 export default function LoginFormDemo() {
@@ -22,8 +21,9 @@ export default function LoginFormDemo() {
     password: "",
   });
 
-  const handleLogin = async () => {
-    if (!user.email) {
+  const handleLogin = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!user.email || !user.password) {
       toast.error("Fill The Details");
       return;
     }
@@ -34,24 +34,16 @@ export default function LoginFormDemo() {
       console.log("Login Success", resp.data);
       toast.success("Logged In Account.");
 
+      if (resp.data.token) {
+        localStorage.setItem("token", resp.data.token);
+        localStorage.setItem("user", JSON.stringify(resp.data.user));
+        document.cookie = `token=${resp.data.token}; path=/; max-age=604800`;
+      }
 
       router.push("/");
     } catch (error) {
-
-      const status = error?.response?.status;
-
-      // if user have signed up using google but dont have password set for website then..
-      if (status === 402) {
-        toast("Set password to continue", { icon: "🔐" });
-        
-
-        // pass email to set-password page
-        router.push(`/set-password?email=${encodeURIComponent(user.email)}`);
-        return;
-      }
-
       const message = error?.response?.data?.error || "Something went wrong";
-      toast.error(message);
+      toast.error(typeof message === "string" ? message : "Invalid credentials");
       console.log(error);
     } finally {
       setLoading(false);
@@ -60,7 +52,7 @@ export default function LoginFormDemo() {
 
   return (
     <section className=" w-full dark:bg-black  h-fit flex items-center justify-center">
-          <div className="fixed inset-0 -z-10 overflow-hidden">
+      <div className="fixed inset-0 -z-10 overflow-hidden">
         <video
           className="w-full h-full object-cover scale-105"
           src="hero2.mp4"
@@ -80,7 +72,7 @@ export default function LoginFormDemo() {
           Enter your credentials to continue
         </p>
 
-        <div className="my-8 flex flex-col gap-4">
+        <form onSubmit={handleLogin} className="my-8 flex flex-col gap-4">
           <LabelInputContainer>
             <Label htmlFor="email"><span className=" text-white">Email</span></Label>
             <Input
@@ -106,7 +98,7 @@ export default function LoginFormDemo() {
           </LabelInputContainer>
 
           <button
-            onClick={handleLogin}
+            type="submit"
             className="group/btn relative hover:opacity-70 active:opacity-60 active:border-2 active:border-white active:dark:opacity-60 transition-all mt-4 cursor-pointer block h-10 w-full rounded-md  bg-black/60 backdrop-blur-2xl font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_#27272a_inset,0px_-1px_0px_0px_#27272a_inset]"
             disabled={loading}
           >
@@ -115,12 +107,11 @@ export default function LoginFormDemo() {
           </button>
           <div className="my-2 h-[1px] w-full bg-gradient-to-r from-transparent via-neutral-300 to-transparent dark:via-neutral-700" />
 
-
           <div className="flex flex-col space-y-4">
             <button
               onClick={() => signIn("github")}
               className="group/btn shadow-input relative active:opacity-70 active:dark:opacity-70 flex h-10 w-full items-center justify-start space-x-2 backdrop-blur-sm bg-white/10 rounded-4xl px-4 font-medium text-black dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_#262626]"
-              type="submit"
+              type="button"
             >
               <IconBrandGithub className="h-4 w-4 text-neutral-200 dark:text-neutral-300" />
               <span className="text-sm text-neutral-200 dark:text-neutral-300">
@@ -129,9 +120,9 @@ export default function LoginFormDemo() {
               <BottomGradient />
             </button>
             <button
-              onClick={() => signIn("google")}
+              onClick={() => signIn("google", { callbackUrl: "/" })}
               className="group/btn active:opacity-70 active:dark:opacity-70 shadow-input relative flex h-10 w-full items-center justify-start space-x-2 backdrop-blur-sm bg-white/10 rounded-4xl px-4 font-medium text-black dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_#262626]"
-              type="submit"
+              type="button"
             >
               <IconBrandGoogle className="h-4 w-4 text-neutral-200 dark:text-neutral-300" />
               <span className="text-sm text-neutral-200 dark:text-neutral-300">
@@ -141,8 +132,7 @@ export default function LoginFormDemo() {
             </button>
           </div>
           <h3 className=" mt-9 text-sm text-neutral-200 dark:text-neutral-300">Don't have an account? <Link href="/signup" className="cursor-pointer hover:text-blue-400 active:text-blue-400  transition-all text-blue-700">Sign Up</Link></h3>
-
-        </div>
+        </form>
       </div>
     </section>
   );
