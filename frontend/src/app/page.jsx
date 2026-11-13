@@ -10,7 +10,10 @@ import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import Link from "next/link";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const BACKEND_REDIRECT_BASE = (
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://url-shortener-1-backend.onrender.com"
+).replace(/\/$/, "");
 
 export default function Home() {
   const { data: session } = useSession();
@@ -56,7 +59,7 @@ export default function Home() {
 
     try {
       setLoadingLinks(true);
-      const resp = await axios.get(`${API_BASE}/codes`, {
+      const resp = await axios.get("/api/codes", {
         headers: {
           Authorization: `Bearer ${activeToken}`,
         },
@@ -136,13 +139,13 @@ export default function Home() {
         payload.code = customCode.trim();   // Added the Customcode in the payload...
       }
 
-      const resp = await axios.post(`${API_BASE}/shorten`, payload, {
+      const resp = await axios.post("/api/shorten", payload, {
         headers: {
           Authorization: `Bearer ${activeToken}`,
         },
       });
 
-      const generatedLink = `${API_BASE}/${resp.data.shortCode}`;
+      const generatedLink = `${BACKEND_REDIRECT_BASE}/${resp.data.shortCode}`;
       setShortUrl(generatedLink);
       setCustomCode("");
       toast.success("Short URL created!");
@@ -164,7 +167,7 @@ export default function Home() {
     if (!activeToken) return;
 
     try {
-      await axios.delete(`${API_BASE}/${id}`, {
+      await axios.delete(`/api/urls/${id}`, {
         headers: {
           Authorization: `Bearer ${activeToken}`,
         },
@@ -332,7 +335,7 @@ export default function Home() {
             ) : (
               <div className="flex flex-col gap-3">
                 {userLinks.map((item) => {
-                  const fullShortUrl = `${API_BASE}/${item.shortCode}`;
+                  const fullShortUrl = `${BACKEND_REDIRECT_BASE}/${item.shortCode}`;
                   return (
                     <div
                       key={item.id}

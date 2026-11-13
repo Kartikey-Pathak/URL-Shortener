@@ -2,7 +2,11 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import axios from "axios";
 
-const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const backendUrl = (
+  process.env.BACKEND_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:8000"
+).replace(/\/$/, "");
 
 export const authOptions = {
   providers: [
@@ -58,4 +62,3 @@ export const authOptions = {
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
-
