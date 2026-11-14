@@ -1,7 +1,7 @@
 import express from "express";
 import { randomBytes } from "node:crypto";
 import db from '../db/index.js';
-import { usersTable } from "../models/user.model.js";
+import { usersTable, urlsTable } from "../models/index.js";
 import { eq } from "drizzle-orm";
 import {
     signupPostRequestSchema,
@@ -224,6 +224,19 @@ router.get("/me", ensureAuthenticated, async (req, resp) => {
     }
 
     return resp.status(200).json({ user });
+});
+
+// 7. Delete User Account
+router.delete("/delete", ensureAuthenticated, async (req, resp) => {
+    try {
+        await db.delete(urlsTable).where(eq(urlsTable.userId, req.user.id));
+        await db.delete(usersTable).where(eq(usersTable.id, req.user.id));
+
+        return resp.status(200).json({ message: "Account deleted successfully", delete: true });
+    } catch (error) {
+        console.error("Failed to delete user account:", error);
+        return resp.status(500).json({ error: "Failed to delete account" });
+    }
 });
 
 export default router;

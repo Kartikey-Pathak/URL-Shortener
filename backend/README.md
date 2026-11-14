@@ -193,6 +193,26 @@ Fetches the profile of the currently authenticated user.
 
 ---
 
+#### `DELETE /user/delete`
+Permanently deletes the authenticated user's account and all shortened URLs created by this user.
+
+- **Headers**: `Authorization: Bearer <token>`
+- **Response `200 OK`**:
+```json
+{
+  "message": "Account deleted successfully",
+  "delete": true
+}
+```
+- **Response `401 Unauthorized`**:
+```json
+{
+  "error": "You Must Be Login"
+}
+```
+
+---
+
 ### 3. URL Routes
 
 #### `POST /shorten`

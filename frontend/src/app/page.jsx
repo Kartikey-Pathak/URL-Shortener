@@ -34,6 +34,7 @@ export default function Home() {
   // User's shortened URLs list from backend
   const [userLinks, setUserLinks] = useState([]);
   const [loadingLinks, setLoadingLinks] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   // Sync token from localStorage or NextAuth session
   useEffect(() => {
@@ -183,6 +184,44 @@ export default function Home() {
     } catch (error) {
       toast.error("Failed to delete link");
       console.error(error);
+    }
+  };
+
+  // Delete user account
+  const handleDeleteAccount = async () => {
+    const activeToken = token || (typeof window !== "undefined" && localStorage.getItem("token"));
+    if (!activeToken) return;
+
+    const confirmed = window.confirm(
+      "Are you sure you want to permanently delete your account? All your shortened links will also be deleted."
+    );
+    if (!confirmed) return;
+
+    try {
+      setDeletingAccount(true);
+      await axios.delete("/api/users/delete", {
+        headers: {
+          Authorization: `Bearer ${activeToken}`,
+        },
+      });
+
+      toast.success("Account deleted successfully.");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      document.cookie = "token=; path=/; max-age=0";
+      setToken(null);
+      setUser(null);
+      setUserLinks([]);
+      setShortUrl(null);
+      if (session) {
+        await signOut({ callbackUrl: "/" });
+      }
+    } catch (error) {
+      const msg = error?.response?.data?.error || "Failed to delete account";
+      toast.error(typeof msg === "string" ? msg : "Failed to delete account");
+      console.error(error);
+    } finally {
+      setDeletingAccount(false);
     }
   };
 
@@ -440,9 +479,23 @@ export default function Home() {
       </main >
 
       {/* Footer */}
-      < footer className="relative z-20 w-full py-6 text-center text-xs text-zinc-500 border-t border-white/5" >
-        {new Date().getFullYear()} Kartikey Pathak.All rights reserved.
-      </footer >
+      <footer className="relative z-20 w-full py-6 px-6 border-t border-white/5 text-xs text-zinc-500">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+          <span>© {new Date().getFullYear()} Kartikey Pathak. All rights reserved.</span>
+
+          {(token || session) && (
+            <button
+              type="button"
+              onClick={handleDeleteAccount}
+              disabled={deletingAccount}
+              className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <Trash2 size={13} />
+              <span>{deletingAccount ? "Deleting Account..." : "Delete Account"}</span>
+            </button>
+          )}
+        </div>
+      </footer>
     </div >
   );
 }
