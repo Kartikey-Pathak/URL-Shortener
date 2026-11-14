@@ -1,17 +1,17 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-export const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendOtpEmail(toEmail, otp) {
-    const mailOptions = {
-        from: `"URL Shortener" <${process.env.EMAIL_USER}>`,
-        to: toEmail,
+    if (!process.env.RESEND_API_KEY) {
+        throw new Error("RESEND_API_KEY is not configured in environment variables");
+    }
+
+    const fromAddress = process.env.RESEND_FROM_EMAIL || "URL Shortener <onboarding@resend.dev>";
+
+    const { data, error } = await resend.emails.send({
+        from: fromAddress,
+        to: [toEmail],
         subject: "Your OTP Verification Code - URL Shortener",
         html: `
         <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 24px; border: 1px solid #334155; border-radius: 12px; background-color: #0f172a; color: #ffffff;">
@@ -24,8 +24,11 @@ export async function sendOtpEmail(toEmail, otp) {
             <p style="font-size: 12px; color: #64748b; text-align: center; margin-top: 24px;">This code expires in 10 minutes. If you did not request this, please ignore this email.</p>
         </div>
         `,
-    };
+    });
 
-    return await transporter.sendMail(mailOptions);
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return data;
 }
-

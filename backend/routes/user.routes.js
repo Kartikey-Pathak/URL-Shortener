@@ -60,10 +60,10 @@ router.post("/signup", async (req, resp) => {
             email
         });
     } catch (mailError) {
-        console.error("Failed to send OTP email:", mailError);
+        console.error("Failed to send OTP email:", mailError?.message || mailError);
         otpStore.delete(email);
         return resp.status(500).json({
-            error: "Failed to send OTP email. Please check your email address."
+            error: mailError?.message || "Failed to send OTP email. Please check your email address."
         });
     }
 });
@@ -134,8 +134,8 @@ router.post("/resend-otp", async (req, resp) => {
         await sendOtpEmail(email, newOtp);
         return resp.status(200).json({ message: "A new OTP has been sent to your email." });
     } catch (mailError) {
-        console.error("Failed to resend OTP email:", mailError);
-        return resp.status(500).json({ error: "Failed to send email. Try again later." });
+        console.error("Failed to resend OTP email:", mailError?.message || mailError);
+        return resp.status(500).json({ error: mailError?.message || "Failed to send email. Try again later." });
     }
 });
 
