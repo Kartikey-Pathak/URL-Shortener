@@ -5,10 +5,14 @@ import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-van
 import { Copy, Check, ExternalLink, Trash2, Link as LinkIcon } from "lucide-react";
 import { FlipWords } from "@/components/ui/flip-words";
 import { LoaderFive } from "@/components/ui/loader";
+import { motion } from "motion/react";
 import { useSession, signOut } from "next-auth/react";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import Link from "next/link";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 const BACKEND_REDIRECT_BASE = (
   process.env.NEXT_PUBLIC_API_URL ||
@@ -214,7 +218,6 @@ export default function Home() {
         </div>
 
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
-          <a href="#features" className="hover:text-white transition-colors">Features</a>
           <a href="#links" className="hover:text-white transition-colors">My Links</a>
           <a href="#api" className="hover:text-white transition-colors">API Docs</a>
         </nav>
@@ -268,23 +271,70 @@ export default function Home() {
           />
 
           {/* Optional Custom Short Code Field */}
-          <div className="mt-4 flex flex-col sm:flex-row items-center gap-3 text-left">
+          <div className="mt-4 flex flex-col sm:flex-row items-end gap-3 text-left">
             <div className="flex-1 w-full">
-              <input
-                type="text"
-                placeholder="Custom alias / code (optional, e.g. my-cool-link)"
-                value={customCode}
-                onChange={(e) => setCustomCode(e.target.value)}
-                className="w-full text-sm px-4 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 transition-colors"
-              />
+              <LabelInputContainer>
+                <Label htmlFor="customCode"><span className="text-white">Custom Alias (Optional)</span></Label>
+                <Input
+                  id="customCode"
+                  type="text"
+                  placeholder="e.g. my-cool-link"
+                  className="bg-black/30 rounded-xl text-white"
+                  value={customCode}
+                  onChange={(e) => setCustomCode(e.target.value)}
+                />
+              </LabelInputContainer>
             </div>
-            <button
-              onClick={onSubmit}
-              disabled={loading}
-              className="w-full sm:w-auto text-xs font-semibold px-5 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 cursor-pointer text-white transition-all shadow-md shrink-0"
-            >
-              {loading ? "Shortening..." : "Shorten URL"}
-            </button>
+            {/* Apple-Style Fluid Color-Changing Gradient Button with Blur Effect */}
+            <div className="relative group/apple-btn w-full sm:w-auto shrink-0 h-10 flex items-center justify-center">
+              {/* Fluid Color-Changing Glowing Blur (Apple Aura) */}
+              <motion.div
+                className="absolute -inset-[3px] rounded-xl opacity-75 blur-md group-hover/apple-btn:opacity-100 group-hover/apple-btn:blur-lg transition-all duration-500 pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(90deg, #ec4899, #8b5cf6, #3b82f6, #06b6d4, #10b981, #f59e0b, #ec4899)",
+                  backgroundSize: "300% 300%",
+                }}
+                animate={{
+                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+
+              {/* Crisp Fluid Gradient Border */}
+              <motion.div
+                className="absolute -inset-[1px] rounded-xl opacity-90 pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(90deg, #ec4899, #8b5cf6, #3b82f6, #06b6d4, #10b981, #f59e0b, #ec4899)",
+                  backgroundSize: "300% 300%",
+                }}
+                animate={{
+                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+
+              {/* Apple Glassmorphic Button */}
+              <button
+                type="button"
+                onClick={onSubmit}
+                disabled={loading}
+                className="relative h-full w-full sm:w-auto px-6 rounded-xl bg-black/85 hover:bg-black/65 backdrop-blur-2xl text-white font-semibold text-xs sm:text-sm tracking-wide shadow-[inset_0_1px_1px_rgba(255,255,255,0.35),0_4px_20px_rgba(0,0,0,0.5)] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer z-10"
+              >
+                <span className="bg-gradient-to-r from-white via-zinc-100 to-zinc-300 font-semibold bg-clip-text text-transparent">
+                  {loading ? "Shortening..." : "Shorten URL"}
+                </span>
+              </button>
+            </div>
           </div>
 
           {/* Newly Generated URL Banner */}
@@ -312,82 +362,88 @@ export default function Home() {
         </div>
 
         {/* User's Created Links Section (GET /codes) */}
-        {(token || session) && (
-          <section id="links" className="w-full max-w-2xl mt-12 text-left">
-            <div className="flex items-center justify-between mb-4 px-2">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <LinkIcon size={18} className="text-purple-400" />
-                Your Shortened Links
-              </h2>
-              <span className="text-xs text-zinc-400">
-                {userLinks.length} {userLinks.length === 1 ? "link" : "links"}
-              </span>
-            </div>
+        {
+          (token || session) && (
+            <section id="links" className="w-full max-w-2xl mt-12 text-left">
+              <div className="flex items-center justify-between mb-4 px-2">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <LinkIcon size={18} className="text-purple-400" />
+                  Your Shortened Links
+                </h2>
+                <span className="text-xs text-zinc-400">
+                  {userLinks.length} {userLinks.length === 1 ? "link" : "links"}
+                </span>
+              </div>
 
-            {loadingLinks ? (
-              <div className="p-8 flex items-center justify-center bg-white/[0.02] border border-white/5 rounded-2xl">
-                <LoaderFive text="Loading your links..." />
-              </div>
-            ) : userLinks.length === 0 ? (
-              <div className="p-8 text-center text-sm text-zinc-400 bg-white/[0.02] border border-white/5 rounded-2xl">
-                You haven't shortened any links yet. Paste a link above to get started!
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {userLinks.map((item) => {
-                  const fullShortUrl = `${BACKEND_REDIRECT_BASE}/${item.shortCode}`;
-                  return (
-                    <div
-                      key={item.id}
-                      className="p-4 bg-white/[0.03] border border-white/10 backdrop-blur-xl rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:border-purple-500/30 transition-all"
-                    >
-                      <div className="overflow-hidden w-full">
-                        <div className="flex items-center gap-2">
-                          <a
-                            href={fullShortUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-purple-400 font-semibold text-sm hover:underline flex items-center gap-1 truncate"
-                          >
-                            {fullShortUrl}
-                            <ExternalLink size={12} />
-                          </a>
+              {loadingLinks ? (
+                <div className="p-8 flex items-center justify-center bg-white/[0.02] border border-white/5 rounded-2xl">
+                  <LoaderFive text="Loading your links..." />
+                </div>
+              ) : userLinks.length === 0 ? (
+                <div className="p-8 text-center text-sm text-zinc-400 bg-white/[0.02] border border-white/5 rounded-2xl">
+                  You haven't shortened any links yet. Paste a link above to get started!
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {userLinks.map((item) => {
+                    const fullShortUrl = `${BACKEND_REDIRECT_BASE}/${item.shortCode}`;
+                    return (
+                      <div
+                        key={item.id}
+                        className="p-4 bg-white/[0.03] border border-white/10 backdrop-blur-xl rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:border-purple-500/30 transition-all"
+                      >
+                        <div className="overflow-hidden w-full">
+                          <div className="flex items-center gap-2">
+                            <a
+                              href={fullShortUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-purple-400 font-semibold text-sm hover:underline flex items-center gap-1 truncate"
+                            >
+                              {fullShortUrl}
+                              <ExternalLink size={12} />
+                            </a>
+                          </div>
+                          <p className="text-xs text-zinc-400 truncate mt-1 max-w-md" title={item.targetURL}>
+                            {item.targetURL}
+                          </p>
                         </div>
-                        <p className="text-xs text-zinc-400 truncate mt-1 max-w-md" title={item.targetURL}>
-                          {item.targetURL}
-                        </p>
-                      </div>
 
-                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                        <button
-                          onClick={() => handleCopy(fullShortUrl, item.id)}
-                          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
-                        >
-                          {copiedId === item.id ? <Check size={13} /> : <Copy size={13} />}
-                          {copiedId === item.id ? "Copied" : "Copy"}
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="p-1.5 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
-                          title="Delete link"
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                          <button
+                            onClick={() => handleCopy(fullShortUrl, item.id)}
+                            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+                          >
+                            {copiedId === item.id ? <Check size={13} /> : <Copy size={13} />}
+                            {copiedId === item.id ? "Copied" : "Copy"}
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item.id)}
+                            className="p-1.5 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
+                            title="Delete link"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-        )}
-      </main>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          )
+        }
+      </main >
 
       {/* Footer */}
-      <footer className="relative z-20 w-full py-6 text-center text-xs text-zinc-500 border-t border-white/5">
-        {new Date().getFullYear()} Kartikey Pathak. All rights reserved.
-      </footer>
-    </div>
+      < footer className="relative z-20 w-full py-6 text-center text-xs text-zinc-500 border-t border-white/5" >
+        {new Date().getFullYear()} Kartikey Pathak.All rights reserved.
+      </footer >
+    </div >
   );
 }
+
+const LabelInputContainer = ({ children, className }) => {
+  return <div className={cn("flex w-full flex-col space-y-2", className)}>{children}</div>;
+};
 
