@@ -38,13 +38,8 @@ export default function SignupFormDemo() {
                 password: user.password,
             });
             console.log("Sign Up OTP Sent", resp.data);
-            if (resp.data?.devOtp) {
-                toast.success(`Verification code: ${resp.data.devOtp}`);
-                router.push(`/verify?email=${encodeURIComponent(user.email)}&otp=${encodeURIComponent(resp.data.devOtp)}`);
-            } else {
-                toast.success("OTP sent to your email!");
-                router.push(`/verify?email=${encodeURIComponent(user.email)}`);
-            }
+            toast.success("OTP sent to your email!");
+            router.push(`/verify?email=${encodeURIComponent(user.email)}`);
         } catch (error) {
             const message = error?.response?.data?.error || "Something went wrong";
             toast.error(typeof message === "string" ? message : "Invalid signup details");
