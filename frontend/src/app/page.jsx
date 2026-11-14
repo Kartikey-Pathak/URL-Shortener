@@ -13,6 +13,7 @@ import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { CometCard } from "@/components/ui/comet-card";
 
 const BACKEND_REDIRECT_BASE = (
   process.env.NEXT_PUBLIC_API_URL ||
@@ -214,7 +215,7 @@ export default function Home() {
       {/* Navigation Header */}
       <header className="relative z-20 w-full px-6 py-4 flex items-center justify-between max-w-7xl mx-auto border-b border-white/10">
         <div className="flex items-center gap-3">
-          <a href="/"><span className="font-bold text-xl tracking-tight">URL Shortener</span></a>
+          <a href="/"><span className=" hover:text-white/80 transition-all font-bold text-xl tracking-tight">URL Shortener</span></a>
         </div>
 
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
@@ -225,7 +226,7 @@ export default function Home() {
         <div className="flex items-center gap-3">
           {token || session ? (
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-zinc-300 hidden sm:inline-block">
+              <span className="text-sm font-medium text-zinc-300 inline-block">
                 {user?.name || session?.user?.name || "User"}
               </span>
               <button
@@ -258,108 +259,110 @@ export default function Home() {
           Create, manage, and share clean short URLs with a fast, secure URL shortening platform built for developers.
         </p>
 
-        {/* Input Card */}
-        <div className="w-full max-w-2xl mt-8 p-6 md:p-8 bg-white/[0.03] border border-white/10 backdrop-blur-2xl rounded-3xl shadow-2xl transition-all">
-          <h3 className="font-medium text-zinc-200 text-lg mb-4 text-left">
-            Paste your long URL
-          </h3>
+        {/* Input Card with CometCard 3D Effect */}
+        <CometCard className="w-full max-w-2xl mt-8">
+          <div className="w-full p-6 md:p-8 bg-white/[0.03] border border-white/10 backdrop-blur-2xl rounded-3xl shadow-2xl transition-all">
+            <h3 className="font-medium text-zinc-200 text-lg mb-4 text-left">
+              Paste your long URL
+            </h3>
 
-          <PlaceholdersAndVanishInput
-            placeholders={placeholders}
-            onChange={handleChange}
-            onSubmit={onSubmit}
-          />
+            <PlaceholdersAndVanishInput
+              placeholders={placeholders}
+              onChange={handleChange}
+              onSubmit={onSubmit}
+            />
 
-          {/* Optional Custom Short Code Field */}
-          <div className="mt-4 flex flex-col sm:flex-row items-end gap-3 text-left">
-            <div className="flex-1 w-full">
-              <LabelInputContainer>
-                <Label htmlFor="customCode"><span className="text-white">Custom Alias (Optional)</span></Label>
-                <Input
-                  id="customCode"
-                  type="text"
-                  placeholder="e.g. my-cool-link"
-                  className="bg-black/30 rounded-xl text-white"
-                  value={customCode}
-                  onChange={(e) => setCustomCode(e.target.value)}
-                />
-              </LabelInputContainer>
-            </div>
-            {/* Apple-Style Fluid Color-Changing Gradient Button with Blur Effect */}
-            <div className="relative group/apple-btn w-full sm:w-auto shrink-0 h-10 flex items-center justify-center">
-              {/* Fluid Color-Changing Glowing Blur (Apple Aura) */}
-              <motion.div
-                className="absolute -inset-[3px] rounded-xl opacity-75 blur-md group-hover/apple-btn:opacity-100 group-hover/apple-btn:blur-lg transition-all duration-500 pointer-events-none"
-                style={{
-                  background:
-                    "linear-gradient(90deg, #ec4899, #8b5cf6, #3b82f6, #06b6d4, #10b981, #f59e0b, #ec4899)",
-                  backgroundSize: "300% 300%",
-                }}
-                animate={{
-                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                }}
-                transition={{
-                  duration: 6,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-
-              {/* Crisp Fluid Gradient Border */}
-              <motion.div
-                className="absolute -inset-[1px] rounded-xl opacity-90 pointer-events-none"
-                style={{
-                  background:
-                    "linear-gradient(90deg, #ec4899, #8b5cf6, #3b82f6, #06b6d4, #10b981, #f59e0b, #ec4899)",
-                  backgroundSize: "300% 300%",
-                }}
-                animate={{
-                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                }}
-                transition={{
-                  duration: 6,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-
-              {/* Apple Glassmorphic Button */}
-              <button
-                type="button"
-                onClick={onSubmit}
-                disabled={loading}
-                className="relative h-full w-full sm:w-auto px-6 rounded-xl bg-black/85 hover:bg-black/65 backdrop-blur-2xl text-white font-semibold text-xs sm:text-sm tracking-wide shadow-[inset_0_1px_1px_rgba(255,255,255,0.35),0_4px_20px_rgba(0,0,0,0.5)] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer z-10"
-              >
-                <span className="bg-gradient-to-r from-white via-zinc-100 to-zinc-300 font-semibold bg-clip-text text-transparent">
-                  {loading ? "Shortening..." : "Shorten URL"}
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* Newly Generated URL Banner */}
-          {shortUrl && (
-            <div className="mt-6 p-4 bg-white/5 border border-purple-500/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-              <div className="text-left overflow-hidden w-full">
-                <span className="text-xs text-zinc-400 block mb-1">Generated Short Link</span>
-                <a href={shortUrl} target="_blank" rel="noreferrer" className="text-purple-400 font-semibold hover:underline text-base flex items-center gap-1.5 truncate">
-                  {shortUrl}
-                  <ExternalLink size={14} />
-                </a>
+            {/* Optional Custom Short Code Field */}
+            <div className="mt-4 flex flex-col sm:flex-row items-end gap-3 text-left">
+              <div className="flex-1 w-full">
+                <LabelInputContainer>
+                  <Label htmlFor="customCode"><span className="text-white">Custom Alias (Optional)</span></Label>
+                  <Input
+                    id="customCode"
+                    type="text"
+                    placeholder="e.g. my-cool-link"
+                    className="bg-black/30 rounded-xl text-white"
+                    value={customCode}
+                    onChange={(e) => setCustomCode(e.target.value)}
+                  />
+                </LabelInputContainer>
               </div>
+              {/* Apple-Style Fluid Color-Changing Gradient Button with Blur Effect */}
+              <div className="relative group/apple-btn w-full sm:w-auto shrink-0 h-10 flex items-center justify-center">
+                {/* Fluid Color-Changing Glowing Blur (Apple Aura) */}
+                <motion.div
+                  className="absolute -inset-[3px] rounded-xl opacity-75 blur-md group-hover/apple-btn:opacity-100 group-hover/apple-btn:blur-lg transition-all duration-500 pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, #ec4899, #8b5cf6, #3b82f6, #06b6d4, #10b981, #f59e0b, #ec4899)",
+                    backgroundSize: "300% 300%",
+                  }}
+                  animate={{
+                    backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                  }}
+                  transition={{
+                    duration: 6,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
 
-              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                {/* Crisp Fluid Gradient Border */}
+                <motion.div
+                  className="absolute -inset-[1px] rounded-xl opacity-90 pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, #ec4899, #8b5cf6, #3b82f6, #06b6d4, #10b981, #f59e0b, #ec4899)",
+                    backgroundSize: "300% 300%",
+                  }}
+                  animate={{
+                    backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                  }}
+                  transition={{
+                    duration: 6,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+
+                {/* Apple Glassmorphic Button */}
                 <button
-                  onClick={() => handleCopy(shortUrl, "main")}
-                  className="flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 cursor-pointer text-white transition-all w-full sm:w-auto justify-center"
+                  type="button"
+                  onClick={onSubmit}
+                  disabled={loading}
+                  className="relative h-full w-full sm:w-auto px-6 rounded-xl bg-black/85 hover:bg-black/65 backdrop-blur-2xl text-white font-semibold text-xs sm:text-sm tracking-wide shadow-[inset_0_1px_1px_rgba(255,255,255,0.35),0_4px_20px_rgba(0,0,0,0.5)] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer z-10"
                 >
-                  {copiedId === "main" ? <Check size={14} /> : <Copy size={14} />}
-                  {copiedId === "main" ? "Copied!" : "Copy"}
+                  <span className="bg-gradient-to-r from-white via-zinc-100 to-zinc-300 font-semibold bg-clip-text text-transparent">
+                    {loading ? "Shortening..." : "Shorten URL"}
+                  </span>
                 </button>
               </div>
             </div>
-          )}
-        </div>
+
+            {/* Newly Generated URL Banner */}
+            {shortUrl && (
+              <div className="mt-6 p-4 bg-white/5 border border-purple-500/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="text-left overflow-hidden w-full">
+                  <span className="text-xs text-zinc-400 block mb-1">Generated Short Link</span>
+                  <a href={shortUrl} target="_blank" rel="noreferrer" className="text-purple-400 font-semibold hover:underline text-base flex items-center gap-1.5 truncate">
+                    {shortUrl}
+                    <ExternalLink size={14} />
+                  </a>
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                  <button
+                    onClick={() => handleCopy(shortUrl, "main")}
+                    className="flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 cursor-pointer text-white transition-all w-full sm:w-auto justify-center"
+                  >
+                    {copiedId === "main" ? <Check size={14} /> : <Copy size={14} />}
+                    {copiedId === "main" ? "Copied!" : "Copy"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </CometCard>
 
         {/* User's Created Links Section (GET /codes) */}
         {
@@ -388,44 +391,45 @@ export default function Home() {
                   {userLinks.map((item) => {
                     const fullShortUrl = `${BACKEND_REDIRECT_BASE}/${item.shortCode}`;
                     return (
-                      <div
-                        key={item.id}
-                        className="p-4 bg-white/[0.03] border border-white/10 backdrop-blur-xl rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:border-purple-500/30 transition-all"
-                      >
-                        <div className="overflow-hidden w-full">
-                          <div className="flex items-center gap-2">
-                            <a
-                              href={fullShortUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-purple-400 font-semibold text-sm hover:underline flex items-center gap-1 truncate"
-                            >
-                              {fullShortUrl}
-                              <ExternalLink size={12} />
-                            </a>
+                      <CometCard key={item.id} className="w-full" cardClassName="rounded-2xl">
+                        <div
+                          className="w-full p-4 bg-white/[0.03] border border-white/10 backdrop-blur-xl rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:border-purple-500/30 transition-all"
+                        >
+                          <div className="overflow-hidden w-full">
+                            <div className="flex items-center gap-2">
+                              <a
+                                href={fullShortUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-purple-400 font-semibold text-sm hover:underline flex items-center gap-1 truncate"
+                              >
+                                {fullShortUrl}
+                                <ExternalLink size={12} />
+                              </a>
+                            </div>
+                            <p className="text-xs text-zinc-400 truncate mt-1 max-w-md" title={item.targetURL}>
+                              {item.targetURL}
+                            </p>
                           </div>
-                          <p className="text-xs text-zinc-400 truncate mt-1 max-w-md" title={item.targetURL}>
-                            {item.targetURL}
-                          </p>
-                        </div>
 
-                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                          <button
-                            onClick={() => handleCopy(fullShortUrl, item.id)}
-                            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
-                          >
-                            {copiedId === item.id ? <Check size={13} /> : <Copy size={13} />}
-                            {copiedId === item.id ? "Copied" : "Copy"}
-                          </button>
-                          <button
-                            onClick={() => handleDelete(item.id)}
-                            className="p-1.5 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
-                            title="Delete link"
-                          >
-                            <Trash2 size={15} />
-                          </button>
+                          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                            <button
+                              onClick={() => handleCopy(fullShortUrl, item.id)}
+                              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+                            >
+                              {copiedId === item.id ? <Check size={13} /> : <Copy size={13} />}
+                              {copiedId === item.id ? "Copied" : "Copy"}
+                            </button>
+                            <button
+                              onClick={() => handleDelete(item.id)}
+                              className="p-1.5 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
+                              title="Delete link"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
                         </div>
-                      </div>
+                      </CometCard>
                     );
                   })}
                 </div>
