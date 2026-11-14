@@ -6,9 +6,16 @@ export const transporter = nodemailer.createTransport({
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
+    connectionTimeout: 4000,
+    greetingTimeout: 4000,
+    socketTimeout: 5000,
 });
 
 export async function sendOtpEmail(toEmail, otp) {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        throw new Error("EMAIL_USER or EMAIL_PASS not configured");
+    }
+
     const mailOptions = {
         from: `"URL Shortener" <${process.env.EMAIL_USER}>`,
         to: toEmail,
@@ -26,6 +33,12 @@ export async function sendOtpEmail(toEmail, otp) {
         `,
     };
 
-    return await transporter.sendMail(mailOptions);
+    // Strict 4.5s timeout so it never blocks or causes 502 Bad Gateway on hosts where SMTP is restricted
+    return await Promise.race([
+        transporter.sendMail(mailOptions),
+        new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("SMTP connection timed out (Render free tier blocks SMTP ports 465/587)")), 4500)
+        ),
+    ]);
 }
 

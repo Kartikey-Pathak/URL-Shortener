@@ -12,9 +12,10 @@ function VerifyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailParam = searchParams.get("email") || "";
+  const otpParam = searchParams.get("otp") || "";
 
   const [email, setEmail] = useState(emailParam);
-  const [otp, setOtp] = useState("");
+  const [otp, setOtp] = useState(otpParam);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
 
@@ -63,7 +64,12 @@ function VerifyContent() {
     try {
       setResending(true);
       const resp = await axios.post("/api/users/resend-otp", { email });
-      toast.success(resp.data.message || "New OTP sent to your email!");
+      if (resp.data?.devOtp) {
+        setOtp(resp.data.devOtp);
+        toast.success(`Verification code: ${resp.data.devOtp}`);
+      } else {
+        toast.success(resp.data.message || "New OTP sent to your email!");
+      }
     } catch (error) {
       const message = error?.response?.data?.error || "Failed to resend OTP";
       toast.error(typeof message === "string" ? message : "Error sending OTP");
