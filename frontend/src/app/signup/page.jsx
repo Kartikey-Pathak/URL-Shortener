@@ -124,17 +124,8 @@ export default function SignupFormDemo() {
                 <div className="my-2 h-[1px] w-full bg-gradient-to-r from-transparent via-neutral-300 to-transparent dark:via-neutral-700" />
 
                 <div className="flex flex-col space-y-4">
-                    <button
-                        onClick={() => signIn("github")}
-                        className="group/btn shadow-input relative active:opacity-70 active:dark:opacity-70 flex h-10 w-full items-center justify-start space-x-2 backdrop-blur-sm bg-white/10 rounded-4xl px-4 font-medium text-black dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_#262626]"
-                        type="button"
-                    >
-                        <IconBrandGithub className="h-4 w-4 text-neutral-200 dark:text-neutral-300" />
-                        <span className="text-sm text-neutral-200 dark:text-neutral-300">
-                            Continue with GitHub
-                        </span>
-                        <BottomGradient />
-                    </button>
+
+
                     <button
                         onClick={() => signIn("google", { callbackUrl: "/" })}
                         className="group/btn active:opacity-70 active:dark:opacity-70 shadow-input relative flex h-10 w-full items-center justify-start space-x-2 backdrop-blur-sm bg-white/10 rounded-4xl px-4 font-medium text-black dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_#262626]"
