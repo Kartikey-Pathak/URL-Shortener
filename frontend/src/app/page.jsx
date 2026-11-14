@@ -219,7 +219,7 @@ export default function Home() {
 
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
           <a href="#links" className="hover:text-white transition-colors">My Links</a>
-          <a href="#api" className="hover:text-white transition-colors">API Docs</a>
+          <a href="https://github.com/Kartikey-Pathak/URL-Shortener/blob/main/backend/README.md" className="hover:text-white transition-colors">API Docs</a>
         </nav>
 
         <div className="flex items-center gap-3">
