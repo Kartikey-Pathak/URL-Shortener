@@ -1,19 +1,26 @@
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
 export async function sendOtpEmail(toEmail, otp) {
-    if (!process.env.RESEND_API_KEY) {
-        throw new Error("RESEND_API_KEY is not configured in environment variables");
+    const apiKey = process.env.BREVO_API_KEY;
+    if (!apiKey) {
+        throw new Error("BREVO_API_KEY is not configured in environment variables");
     }
 
-    const fromAddress = process.env.RESEND_FROM_EMAIL || "URL Shortener <onboarding@resend.dev>";
+    const senderEmail = process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_USER || "kartikeypathak08@gmail.com";
+    const senderName = process.env.BREVO_SENDER_NAME || "URL Shortener";
 
-    const { data, error } = await resend.emails.send({
-        from: fromAddress,
-        to: [toEmail],
+    const emailData = {
+        sender: {
+            name: senderName,
+            email: senderEmail,
+        },
+        to: [
+            {
+                email: toEmail,
+            },
+        ],
         subject: "Your OTP Verification Code - URL Shortener",
-        html: `
+        htmlContent: `
         <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 24px; border: 1px solid #334155; border-radius: 12px; background-color: #0f172a; color: #ffffff;">
             <h2 style="color: #c084fc; text-align: center; margin-bottom: 8px;">URL Shortener</h2>
             <p style="font-size: 15px; color: #94a3b8; text-align: center; margin-top: 0;">Email Verification</p>
@@ -24,10 +31,22 @@ export async function sendOtpEmail(toEmail, otp) {
             <p style="font-size: 12px; color: #64748b; text-align: center; margin-top: 24px;">This code expires in 10 minutes. If you did not request this, please ignore this email.</p>
         </div>
         `,
+    };
+
+    const response = await fetch(BREVO_API_URL, {
+        method: "POST",
+        headers: {
+            "accept": "application/json",
+            "api-key": apiKey,
+            "content-type": "application/json",
+        },
+        body: JSON.stringify(emailData),
     });
 
-    if (error) {
-        throw new Error(error.message);
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message || `Brevo API error (${response.status})`);
     }
 
     return data;
