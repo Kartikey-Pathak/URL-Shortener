@@ -1,26 +1,23 @@
-const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
+import sgMail from "@sendgrid/mail";
 
 export async function sendOtpEmail(toEmail, otp) {
-    const apiKey = process.env.BREVO_API_KEY;
+    const apiKey = process.env.SENDGRID || process.env.SENDGRID_API_KEY;
     if (!apiKey) {
-        throw new Error("BREVO_API_KEY is not configured in environment variables");
+        throw new Error("SENDGRID API key is not configured in environment variables");
     }
 
-    const senderEmail = process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_USER || "kartikeypathak08@gmail.com";
-    const senderName = process.env.BREVO_SENDER_NAME || "URL Shortener";
+    sgMail.setApiKey(apiKey);
 
-    const emailData = {
-        sender: {
-            name: senderName,
-            email: senderEmail,
+    const fromEmail = process.env.SENDGRID_SENDER_EMAIL || "polydash.noreply@gmail.com";
+
+    const msg = {
+        to: toEmail,
+        from: {
+            name: "URL Shortener",
+            email: fromEmail,
         },
-        to: [
-            {
-                email: toEmail,
-            },
-        ],
         subject: "Your OTP Verification Code - URL Shortener",
-        htmlContent: `
+        html: `
         <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 24px; border: 1px solid #334155; border-radius: 12px; background-color: #0f172a; color: #ffffff;">
             <h2 style="color: #c084fc; text-align: center; margin-bottom: 8px;">URL Shortener</h2>
             <p style="font-size: 15px; color: #94a3b8; text-align: center; margin-top: 0;">Email Verification</p>
@@ -33,21 +30,11 @@ export async function sendOtpEmail(toEmail, otp) {
         `,
     };
 
-    const response = await fetch(BREVO_API_URL, {
-        method: "POST",
-        headers: {
-            "accept": "application/json",
-            "api-key": apiKey,
-            "content-type": "application/json",
-        },
-        body: JSON.stringify(emailData),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-        throw new Error(data.message || `Brevo API error (${response.status})`);
+    try {
+        const [response] = await sgMail.send(msg);
+        return response;
+    } catch (error) {
+        const errorMessage = error?.response?.body?.errors?.[0]?.message || error.message;
+        throw new Error(errorMessage);
     }
-
-    return data;
 }
