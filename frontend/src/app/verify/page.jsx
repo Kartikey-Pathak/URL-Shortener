@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, Suspense } from "react";
+import React, { useState, Suspense, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -17,6 +17,12 @@ function VerifyContent() {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
+
+  useEffect(() => {
+    toast("Check Spam folder for the OTP.", {
+      icon: "📩",
+    });
+  }, []);
 
   const handleVerify = async (e) => {
     e.preventDefault();
@@ -63,7 +69,7 @@ function VerifyContent() {
     try {
       setResending(true);
       const resp = await axios.post("/api/users/resend-otp", { email });
-      toast.success(resp.data.message || "New OTP sent to your email!");
+      toast.success("New OTP sent! Check inbox or spam folder.");
     } catch (error) {
       const message = error?.response?.data?.error || "Failed to resend OTP";
       toast.error(typeof message === "string" ? message : "Error sending OTP");
